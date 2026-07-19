@@ -26,7 +26,7 @@ class ConfigManager:
                     "desc": "Безопасный серфинг (Изоляция файлов + Интернет)"
                 },
                 "office": {
-                    "app_name": "gedit",
+                    "app_name": "Kate",
                     "network": False,
                     "desc": "Изолированный редактор (Интернет полностью ЗАБЛОКИРОВАН)"
                 }

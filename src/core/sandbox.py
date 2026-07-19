@@ -22,11 +22,11 @@ class SandboxLauncher:
             "--dir", "/tmp",
             "--proc", "/proc",
             "--dev", "/dev",
-            "--as-pid-1",                  # Решает ошибку EPERM
-            "--unshare-pid"               # Требование безопасности для --as-pid-1
+            "--as-pid-1",                  
+            "--unshare-pid"               
         ]
 
-        # 🖥️ Настройка графики (Wayland / X11)
+        # Настройка графики (Wayland / X11)
         wayland_display = os.environ.get("WAYLAND_DISPLAY")
         xauthority = os.environ.get("XAUTHORITY")
         display = os.environ.get("DISPLAY")
@@ -46,35 +46,39 @@ class SandboxLauncher:
         if xauthority and os.path.exists(xauthority):
             cmd.extend(["--ro-bind", xauthority, xauthority])
 
-        for font_dir in ["/usr/share/fonts", "/usr/share/themes", "/usr/share/icons"]:
+        for font_dir in ["/usr/share/fonts", "/usr/share/themes", "/usr/share/icons", "/usr/share/KDE"]:
             if os.path.exists(font_dir):
                 cmd.extend(["--ro-bind", font_dir, font_dir])
 
-        # 🔥 ИСПРАВЛЕНИЕ СЕТИ И /etc БЕЗ КОНФЛИКТОВ С СЫЛКАМИ
-        # Вместо монтирования всего /etc, мы монтируем только те файлы, которые реально нужны для работы GUI и сети
+        # Полный список /etc для тяжелых приложений (Kate/KDE требует dbus и темы)
         important_etc_files = [
             "fonts", "passwd", "group", "host.conf", "hosts", 
-            "nsswitch.conf", "ssl", "pki", "crypto-policies"
+            "nsswitch.conf", "ssl", "pki", "crypto-policies",
+            "dbus-1", "alternatives", "xdg"
         ]
         
-        # Создаем виртуальную пустую папку /etc внутри песочницы
         cmd.extend(["--dir", "/etc"])
-        
-        # Прокидываем в неё только действительно важные системные файлы, если они существуют
         for etc_item in important_etc_files:
             system_path = f"/etc/{etc_item}"
             if os.path.exists(system_path):
                 cmd.extend(["--ro-bind", system_path, system_path])
 
+        # Проброс сокета D-Bus для Kate
+        dbus_pointer = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        if dbus_pointer and "path=" in dbus_pointer:
+            try:
+                dbus_path = dbus_pointer.split("path=")[1].split(",")[0]
+                if os.path.exists(dbus_path):
+                    cmd.extend(["--bind", dbus_path, dbus_path])
+            except Exception:
+                pass
+
+        # Настройка сети
         if self.network_allowed:
             cmd.extend(["--share-net"])
-            
-            # Создаем на твоем ПК простой текстовый файл с DNS-серверами Google и Cloudflare
             dns_file_path = f"/tmp/sandbox_{self.app_name}_dns.conf"
             with open(dns_file_path, "w") as f:
                 f.write("nameserver 8.8.8.8\nnameserver 1.1.1.1\n")
-            
-            # Теперь монтируем наш файл прямо в пустую виртуальную точку /etc/resolv.conf без всяких конфликтов!
             cmd.extend(["--ro-bind", dns_file_path, "/etc/resolv.conf"])
         else:
             cmd.append("--unshare-net")
@@ -89,11 +93,12 @@ class SandboxLauncher:
         cmd.extend(["--setenv", "HOME", os.path.expanduser("~")])
 
         cmd.append(self.app_name)
-        
-        # 🔥 НОВОЕ: Если мы запускаем именно firefox, добавляем флаг --no-remote
-        # Это заставит его запустить СВОЙ независимый процесс, проигнорировав открытый в системе браузер
         if self.app_name == "firefox":
             cmd.append("--no-remote")
+            
+        # 🔥 НОВОЕ: Запрещаем Kate искать другие процессы и заставляем открыть НОВОЕ окно
+        elif self.app_name == "kate":
+            cmd.append("--new-instance")
             
         return cmd
 
@@ -103,22 +108,33 @@ class SandboxLauncher:
             print("\n❌ КРИТИЧЕСКАЯ ОШИБКА: Утилита 'bubblewrap' не установлена!")
             return False
 
-        # 🔥 НОВОЕ: Полностью стираем старую фейковую домашнюю папку перед запуском,
-        # чтобы у браузера не было «памяти» о прошлых сессиях внутри нашей программы.
+        if not ConfigManager.check_system_dependency(self.app_name):
+            print(f"\n❌ ОШИБКА: Программа '{self.app_name}' не найдена!")
+            return False
+
         fake_home = f"/tmp/sandbox_{self.app_name}_home"
         if os.path.exists(fake_home):
             import shutil
-            shutil.rmtree(fake_home) # rmtree полностью удаляет папку со всеми файлами внутри
+            try:
+                shutil.rmtree(fake_home)
+            except Exception:
+                pass
 
         command = self.generate_bwrap_command()
         print(f"\n🛡️ [security_start] Запуск {self.app_name}...")
         
         try:
-            subprocess.Popen(command)
+            # Временно меняем Popen на run, чтобы Python ЖДАЛ завершения команды 
+            # и принудительно выводил все системные ошибки на экран
+            result = subprocess.run(command, capture_output=True, text=True)
+            
+            # Если bwrap завершился с ошибкой, печатаем её в терминал
+            if result.returncode != 0:
+                print("\n❌ СИСТЕМНЫЙ СБОЙ ПЕСОЧНИЦЫ:")
+                print(result.stderr)
+                return False
+                
             return True
-        except FileNotFoundError:
-            print(f"❌ Ошибка: Приложение '{self.app_name}' не найдено в системе.")
-            return False
         except Exception as e:
             print(f"❌ Непредвиденная ошибка при запуске: {e}")
             return False
