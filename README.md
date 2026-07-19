@@ -9,7 +9,7 @@
 Откройте терминал, скопируйте и запустите эти команды по очереди:
 
 ```bash
-git clone https://github.com
+git clone https://github.com/security_start
 cd security_start
 chmod +x install.sh
 ./install.sh
