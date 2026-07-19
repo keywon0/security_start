@@ -1,5 +1,8 @@
 # 🛡️ security_start
 
+<img width="519" height="563" alt="image" src="https://github.com/user-attachments/assets/4cc9cd58-520a-446f-83ac-790d04fc6189" />
+
+
 [Русский](#русский) | [English](#english)
 
 ---
