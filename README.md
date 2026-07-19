@@ -16,7 +16,7 @@
 ### Как установить и запустить
 
 ```bash
-git clone https://github.com/security_start
+git clone https://github.com/security_start.git
 cd security_start
 chmod +x install.sh
 ./install.sh
@@ -38,7 +38,7 @@ Any downloaded pictures and documents don't land straight on your computer; inst
 ### Installation & Launch
 
 ```bash
-git clone https://github.com/security_start
+git clone https://github.com/security_start.git
 cd security_start
 chmod +x install.sh
 ./install.sh
