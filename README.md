@@ -1,6 +1,6 @@
 # 🛡️ security_start
 
-<img width="519" height="563" alt="image" src="https://github.com/user-attachments/assets/4cc9cd58-520a-446f-83ac-790d04fc6189" />
+<img width="406" height="228" alt="image" src="https://github.com/user-attachments/assets/7f7a6411-a6f1-4db1-9366-99c1dd4bda98" />
 
 
 [Русский](#русский) | [English](#english)
@@ -9,9 +9,7 @@
 
 ## Русский
 
-Это простая программа написанная ИИ для безопасного запуска браузера в изолированной «песочнице». Когда вы запускаете браузер через неё, он полностью отрезан от ваших личных файлов на компьютере, поэтому подхватить вирус или скрытый скрипт из сети становится невозможно. Писал для себя но буду рад критике если кого нибудь заинтересует мое "чудо".
-
-Все скачанные картинки и документы не попадают сразу на компьютер, а ловятся во временную скрытую папку (изолятор). Чтобы забрать файл в свои реальные загрузки, нужно будет ввести ПИН-код в окне программы."
+Это простая программа написанная ИИ для безопасного запуска браузера в изолированной «песочнице». Когда вы запускаете браузер через неё, он полностью отрезан от ваших личных файлов на компьютере, поэтому подхватить вирус или скрытый скрипт из сети становится невозможно. Писал для себя но буду рад критике если кого нибудь заинтересует мое "чудо"
 
 ### Как установить и запустить
 
@@ -32,8 +30,6 @@ chmod +x install.sh
 ## English
 
 This is a simple AI-written program for running your browser safely inside an isolated "sandbox." When you launch the browser through it, it is completely cut off from your personal files on the computer, making it impossible to catch a virus or a hidden script from the web. I originally made this for myself, but I'd appreciate any feedback if anyone gets interested in my little "miracle". 
-
-Any downloaded pictures and documents don't land straight on your computer; instead, they are caught in a temporary hidden folder (the isolator). To pull a file into your real downloads, you'll just need to type in a PIN code in the program's window.
 
 ### Installation & Launch
 
